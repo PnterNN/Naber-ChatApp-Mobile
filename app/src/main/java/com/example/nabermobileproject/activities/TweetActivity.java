@@ -14,6 +14,7 @@ import android.widget.EditText;
 import android.widget.ListView;
 
 import com.example.nabermobileproject.R;
+import com.example.nabermobileproject.adapters.TweetAdapter;
 import com.example.nabermobileproject.model.MessageModel;
 import com.example.nabermobileproject.model.TweetModel;
 import com.example.nabermobileproject.model.UserModel;
@@ -29,15 +30,31 @@ import java.util.UUID;
 
 public class TweetActivity extends AppCompatActivity {
 
+    private TweetAdapter tweetAdapter;
     Button sendTweetButton;
     Button chatButton;
     ListView tweetList;
     EditText tweetBox;
 
     private void sendTweet(View v){
+        if(tweetBox.getText().toString().equals("")){
+            return;
+        }
         Random random = new Random();
         int tweetUID = random.nextInt((999999999-100000000) + 1) + 100000000;
         ServerManager.sendTweet(tweetBox.getText().toString(), tweetUID + "");
+        Thread thread = new Thread(() -> {
+            try {
+                TweetModel tweet = new TweetModel(DataService.username, tweetBox.getText().toString(), tweetUID + "", null);
+                tweetBox.setText("");
+                tweetAdapter.addTweet(tweet);
+                tweetList.requestLayout();
+            } catch (Exception e) {
+                Log.e("NaberApp", "sendTweet: ", e);
+            }
+        });
+        thread.start();
+
     }
     private void openChat(View v){
         Intent chatIntent = new Intent(this, ChatActivity.class);
@@ -56,6 +73,9 @@ public class TweetActivity extends AppCompatActivity {
         chatButton = findViewById(R.id.chatButton);
         tweetList = findViewById(R.id.tweetListView);
         tweetBox = findViewById(R.id.tweetBox);
+
+        tweetAdapter = new TweetAdapter(this);
+        tweetList.setAdapter(tweetAdapter);
 
         sendTweetButton.setOnClickListener(this::sendTweet);
         chatButton.setOnClickListener(this::openChat);
@@ -78,6 +98,7 @@ public class TweetActivity extends AppCompatActivity {
         DataService.server.userDisconnectedEvent = this::userDisconnected;
         DataService.server.userRegisterConnectedEvent = this::registerUserConnected;
     }
+
 
     private void registerUserConnected(Void unused){
         String username = DataService.server.getPacketReader().readMessage();
@@ -178,8 +199,17 @@ public class TweetActivity extends AppCompatActivity {
         String username = DataService.server.getPacketReader().readMessage();
         String tweetMessage = DataService.server.getPacketReader().readMessage();
         String tweetUID = DataService.server.getPacketReader().readMessage();
-        //TweetModel tweet = new TweetModel(username, tweetMessage, tweetUID, null);
-        //DataService.tweets.add(tweet);
+        Thread thread = new Thread(() -> {
+            try {
+                TweetModel tweet = new TweetModel(username, tweetMessage, tweetUID, null);
+                tweetAdapter.addTweet(tweet);
+                tweetList.requestLayout();
+            } catch (Exception e) {
+                Log.e("NaberApp", "tweetReceivedEvent: ", e);
+            }
+        });
+        thread.start();
+
     }
     private void likeEvent(Void unused){
         String userUID = DataService.server.getPacketReader().readMessage();
@@ -199,23 +229,34 @@ public class TweetActivity extends AppCompatActivity {
             String tweetMessage = DataService.server.getPacketReader().readMessage();
             String tweetLikes = DataService.server.getPacketReader().readMessage();
             String tweetTime = DataService.server.getPacketReader().readMessage();
-            //List<UserModel> tweetLike = new ArrayList<>();
-            String[] likes = tweetLikes.split(" ");
-            for (String like : likes){
-                if(like != "" || like != " " || like != null){
-                    //tweetLike.add(new UserModel("", like));
+            Thread thread = new Thread(() -> {
+                try {
+                    List<UserModel> tweetLike = new ArrayList<>();
+                    String[] likes = tweetLikes.split(" ");
+                    for (String like : likes){
+                        if(like != "" || like != " " || like != null){
+
+                            tweetLike.add(new UserModel("", like));
+                        }
+                    }
+                    TweetModel tweet = new TweetModel(username, tweetMessage, tweetUID, null);
+                    tweet.setLikes(tweetLike);
+                    tweetAdapter.addTweet(tweet);
+                    tweetList.requestLayout();
+                } catch (Exception e) {
+                    Log.e("NaberApp", "getTweets: ", e);
                 }
-            }
-            //TweetModel tweet = new TweetModel(username, tweetMessage, tweetUID, null);
-            //tweet.setLikes(tweetLike);
-            //DataService.tweets.add(tweet);
+            });
+            thread.start();
+
         }
     }
     private void deleteTweetEvent(Void unused){
         String tweetUID = DataService.server.getPacketReader().readMessage();
-        for (TweetModel tweet : DataService.tweets){
+        for (TweetModel tweet : tweetAdapter.getTweets()){
             if (tweet.getTweetUID().equals(tweetUID)){
-                DataService.tweets.remove(tweet);
+                tweetAdapter.removeTweet(tweet);
+                tweetList.requestLayout();
             }
         }
     }
