@@ -15,6 +15,7 @@ import com.example.nabermobileproject.model.UserModel;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class TweetAdapter extends BaseAdapter {
 
@@ -33,13 +34,11 @@ public class TweetAdapter extends BaseAdapter {
     }
     public void addTweet(TweetModel tweet) {
         tweets.add(tweet);
-        notifyDataSetChanged();
     }
     public void removeTweet(TweetModel tweet) {
         tweets.remove(tweet);
         notifyDataSetChanged();
     }
-
     @Override
     public int getCount() {
         return tweets.size();
