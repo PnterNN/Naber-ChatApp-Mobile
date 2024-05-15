@@ -127,6 +127,8 @@ public class ServerManager {
                 }
             });
             thread.start();
+        }else{
+            Log.e("NaberApp", "sendMessage: instance is null");
         }
     }
     public static void deleteTweet(String tweetUID){

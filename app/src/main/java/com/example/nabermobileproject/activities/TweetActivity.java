@@ -13,6 +13,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 
+import com.example.nabermobileproject.NET.Server;
 import com.example.nabermobileproject.R;
 import com.example.nabermobileproject.adapters.TweetAdapter;
 import com.example.nabermobileproject.model.MessageModel;
@@ -30,7 +31,6 @@ import java.util.UUID;
 
 public class TweetActivity extends AppCompatActivity {
 
-    private TweetAdapter tweetAdapter;
     Button sendTweetButton;
     Button chatButton;
     ListView tweetList;
@@ -46,14 +46,18 @@ public class TweetActivity extends AppCompatActivity {
         tweetBox.setText("");
     }
     private void openChat(View v){
-        Intent chatIntent = new Intent(this, ChatActivity.class);
-        startActivity(chatIntent);
+        try {
+            Intent chatIntent = new Intent(this, UserlistActivity.class);
+            startActivity(chatIntent);
+        }catch (Exception e) {
+            Log.e("NaberApp", "openChat: ", e);
+        }
+
     }
 
     @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.d("NaberApp", "onCreate: TweetActivity");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tweet);
 
@@ -62,13 +66,15 @@ public class TweetActivity extends AppCompatActivity {
         tweetList = findViewById(R.id.tweetListView);
         tweetBox = findViewById(R.id.tweetBox);
 
-        tweetAdapter = new TweetAdapter(this);
-        tweetList.setAdapter(tweetAdapter);
+        DataService.server = ServerManager.getInstance();
+
+        DataService.tweetAdapter = new TweetAdapter(this);
+        tweetList.setAdapter(DataService.tweetAdapter);
 
         sendTweetButton.setOnClickListener(this::sendTweet);
         chatButton.setOnClickListener(this::openChat);
 
-        DataService.server = ServerManager.getInstance();
+
         DataService.server.likeEvent = this::likeEvent;
         DataService.server.getTweetsEvent = this::getTweets;
         DataService.server.getFriendEvent = this::getFriendEvent;
@@ -80,70 +86,11 @@ public class TweetActivity extends AppCompatActivity {
         DataService.server.friendRequestAcceptEvent = this::friendRequestAcceptEvent;
         DataService.server.friendRequestDeclineEvent = this::friendRequestDeclineEvent;
         DataService.server.groupCreatedEvent = this::createGroup;
-        DataService.server.userConnectedEvent = this::userConnected;
-        DataService.server.messageReceivedEvent = this::messageReceived;
-        DataService.server.deleteMessageEvent = this::deleteMessageEvent;
-        DataService.server.userDisconnectedEvent = this::userDisconnected;
-        DataService.server.userRegisterConnectedEvent = this::registerUserConnected;
+
+
     }
 
 
-    private void registerUserConnected(Void unused){
-        String username = DataService.server.getPacketReader().readMessage();
-        String UID = DataService.server.getPacketReader().readMessage();
-        //UserModel user = new UserModel(username, UID);
-        //user.getMessages().add(new TweetModel(username,"Welcome to the chat!", UUID.randomUUID().toString(), null));
-        //DataService.users.add(user);
-    }
-    private void userConnected(Void unused){
-        String username = DataService.server.getPacketReader().readMessage();
-        String UID = DataService.server.getPacketReader().readMessage();
-        int messageCount = Integer.parseInt(DataService.server.getPacketReader().readMessage());
-        //UserModel user = new UserModel(username, UID);
-        String dataUsername = "";
-        String dataUID = "";
-        String dataImageSource = "";
-        String dataMessage = "";
-        String dataVoice = "";
-        LocalDateTime dataTime = null;//LocalDateTime.now();
-        boolean dataFirstMessage = true;
-        String messageUID = "";
-        int index2 = 0;
-        for (int i = 0; i < messageCount; i++) {
-            dataUsername = DataService.server.getPacketReader().readMessage();
-            dataUID = DataService.server.getPacketReader().readMessage();
-            dataImageSource = DataService.server.getPacketReader().readMessage();
-            dataMessage = DataService.server.getPacketReader().readMessage();
-            dataVoice = DataService.server.getPacketReader().readMessage();
-            dataTime = null;//LocalDateTime.parse(DataService.server.getPacketReader().readMessage());
-            dataFirstMessage = Boolean.parseBoolean(DataService.server.getPacketReader().readMessage());
-            messageUID = DataService.server.getPacketReader().readMessage();
-            Random random = new Random();
-            int messageUID2 = Integer.parseInt(messageUID) - random.nextInt(9999);
-            //int index = user.getMessages().size();
-            if(dataVoice == "0"){
-                if(dataUsername!=""){
-                    boolean ownMessage = false;
-                    if(DataService.username == dataUsername){
-                        ownMessage = true;
-                    }
-                    //user.getMessages().add(new TweetModel(dataUsername, dataMessage, messageUID2 + "", dataTime));
-                }else{
-                    //user.getMessages().add(new TweetModel("NaberApp", username+" çevrimiçi oldu",  UUID.randomUUID().toString(), dataTime));
-                }
-            }
-        }
-    }
-    private void messageReceived(Void unused){
-        String message = DataService.server.getPacketReader().readMessage();
-        String username = DataService.server.getPacketReader().readMessage();
-        String sendedUserUID = DataService.server.getPacketReader().readMessage();
-        String messageUID = DataService.server.getPacketReader().readMessage();
-        //UserModel user = DataService.users.stream().filter(x -> x.getUID().equals(sendedUserUID)).findFirst().get();
-        //if(user != null){
-        //    user.getMessages().add(new TweetModel(username, message, messageUID, null));
-        //}
-    }
 
     private void createGroup(Void unused){
         String groupName = DataService.server.getPacketReader().readMessage();
@@ -161,27 +108,8 @@ public class TweetActivity extends AppCompatActivity {
         //group.getMessages().add(new TweetModel("NaberApp", "Grup oluşturuldu", UUID.randomUUID().toString(), null));
     }
 
-    private void userDisconnected(Void unused){
-        String username = DataService.server.getPacketReader().readMessage();
-        //UserModel user = DataService.users.stream().filter(x -> x.getUsername().equals(username)).findFirst().get();
-        //if(user != null){
-        //    user.getMessages().add(new TweetModel("NaberApp", username+" çevrimdışı oldu", UUID.randomUUID().toString(), null));
-         //   DataService.users.remove(user);
-        //}
-    }
-    private void deleteMessageEvent(Void unused){
-        String contactUID = DataService.server.getPacketReader().readMessage();
-        String messageUID = DataService.server.getPacketReader().readMessage();
-        for (UserModel user : DataService.users){
-            if (user.getUID().equals(contactUID)){
-                for (MessageModel message : user.getMessages()){
-                    if (message.getUID().equals(messageUID)){
-                        user.getMessages().remove(message);
-                    }
-                }
-            }
-        }
-    }
+
+
 
     private void tweetReceivedEvent(Void unused){
         String username = DataService.server.getPacketReader().readMessage();
@@ -189,8 +117,8 @@ public class TweetActivity extends AppCompatActivity {
         String tweetUID = DataService.server.getPacketReader().readMessage();
         runOnUiThread(() -> {
             TweetModel tweet = new TweetModel(username, tweetMessage, tweetUID, null);
-            tweetAdapter.addTweet(tweet);
-            tweetAdapter.notifyDataSetChanged();
+            DataService.tweetAdapter.addTweet(tweet);
+            DataService.tweetAdapter.notifyDataSetChanged();
             tweetList.requestLayout();
         });
     }
@@ -223,8 +151,8 @@ public class TweetActivity extends AppCompatActivity {
                     }
                     TweetModel tweet = new TweetModel(username, tweetMessage, tweetUID, null);
                     tweet.setLikes(tweetLike);
-                    tweetAdapter.addTweet(tweet);
-                    tweetAdapter.notifyDataSetChanged();
+                    DataService.tweetAdapter.addTweet(tweet);
+                    DataService.tweetAdapter.notifyDataSetChanged();
                     tweetList.requestLayout();
                 });
             }catch (Exception e){
@@ -234,11 +162,11 @@ public class TweetActivity extends AppCompatActivity {
     }
     private void deleteTweetEvent(Void unused){
         String tweetUID = DataService.server.getPacketReader().readMessage();
-        for (TweetModel tweet : tweetAdapter.getTweets()){
+        for (TweetModel tweet : DataService.tweetAdapter.getTweets()){
             if (tweet.getTweetUID().equals(tweetUID)){
                 runOnUiThread(() -> {
-                    tweetAdapter.removeTweet(tweet);
-                    tweetAdapter.notifyDataSetChanged();
+                    DataService.tweetAdapter.removeTweet(tweet);
+                    DataService.tweetAdapter.notifyDataSetChanged();
                     tweetList.requestLayout();
                 });
             }
@@ -290,18 +218,23 @@ public class TweetActivity extends AppCompatActivity {
     }
     private void getFriendEvent(Void unused){
         int friendCount = Integer.parseInt(DataService.server.getPacketReader().readMessage());
-        for (int i = 0; i < friendCount; i++){
-            String username = DataService.server.getPacketReader().readMessage();
-            Boolean ownRequest = Boolean.parseBoolean(DataService.server.getPacketReader().readMessage());
-            Boolean state = Boolean.parseBoolean(DataService.server.getPacketReader().readMessage());
-            //UserModel user = new UserModel(username, UUID.randomUUID().toString());
-            //user.setOwnRequest(ownRequest);
-            if (state){
-                //DataService.friends.add(user);
-            } else {
-                //DataService.friendRequests.add(user);
+        try{
+            for (int i = 0; i < friendCount; i++){
+                String username = DataService.server.getPacketReader().readMessage();
+                Boolean ownRequest = Boolean.parseBoolean(DataService.server.getPacketReader().readMessage());
+                Boolean state = Boolean.parseBoolean(DataService.server.getPacketReader().readMessage());
+                //UserModel user = new UserModel(username, UUID.randomUUID().toString());
+                //user.setOwnRequest(ownRequest);
+                if (state){
+                    //DataService.friends.add(user);
+                } else {
+                    //DataService.friendRequests.add(user);
+                }
             }
+        }catch (Exception e){
+            Log.e("NaberApp", "getFriendEvent: ", e);
         }
+
     }
 
 }

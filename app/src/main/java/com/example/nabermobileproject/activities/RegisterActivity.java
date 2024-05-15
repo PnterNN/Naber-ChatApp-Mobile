@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -16,6 +17,9 @@ import android.widget.Toast;
 import com.example.nabermobileproject.R;
 import com.example.nabermobileproject.services.DataService;
 import com.example.nabermobileproject.services.ServerManager;
+
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class RegisterActivity extends AppCompatActivity {
     Button loginButton;
@@ -61,8 +65,21 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     private void registerSuccessEvent(Void unused){
+
+        DataService.server = ServerManager.getInstance();
+
+        DataService.users = new ArrayList<>();
+        DataService.tweets = new ArrayList<>();
+        DataService.friends = new ArrayList<>();
+        DataService.friendRequests = new ArrayList<>();
+        DataService.chatAdapter = new HashMap<>();
+
         Intent chatIntent = new Intent(this, ChatActivity.class);
         startActivity(chatIntent);
+
+        Intent userlistIntent = new Intent(this, UserlistActivity.class);
+        startActivity(userlistIntent);
+
         Intent tweetIntent = new Intent(this, TweetActivity.class);
         startActivity(tweetIntent);
     }

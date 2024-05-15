@@ -12,6 +12,7 @@ import android.widget.TextView;
 import com.example.nabermobileproject.R;
 import com.example.nabermobileproject.model.TweetModel;
 import com.example.nabermobileproject.model.UserModel;
+import com.example.nabermobileproject.services.DataService;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,33 +21,32 @@ import java.util.List;
 public class TweetAdapter extends BaseAdapter {
 
     public ArrayList<TweetModel> getTweets() {
-        return tweets;
+        return DataService.tweets;
     }
-
-    private ArrayList<TweetModel> tweets;
     private Context context;
     private LayoutInflater layoutInflater;
 
     public TweetAdapter(Context context) {
-        tweets = new ArrayList<>();
         this.context = context;
         this.layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
     public void addTweet(TweetModel tweet) {
-        tweets.add(tweet);
+        DataService.tweets.add(tweet);
     }
     public void removeTweet(TweetModel tweet) {
-        tweets.remove(tweet);
+        DataService.tweets.remove(tweet);
         notifyDataSetChanged();
     }
     @Override
     public int getCount() {
-        return tweets.size();
+        if(DataService.tweets == null)
+            return 0;
+        return DataService.tweets.size();
     }
 
     @Override
     public Object getItem(int position) {
-        return tweets.get(position);
+        return DataService.tweets.get(position);
     }
 
     @Override
@@ -61,8 +61,8 @@ public class TweetAdapter extends BaseAdapter {
         TextView name = (TextView) customView.findViewById(R.id.tweetUsername);
         TextView genus = (TextView) customView.findViewById(R.id.tweetMessage);
 
-        name.setText(tweets.get(position).getUsername());
-        genus.setText(tweets.get(position).getTweetMessage());
+        name.setText(DataService.tweets.get(position).getUsername());
+        genus.setText(DataService.tweets.get(position).getTweetMessage());
 
         return customView;
     }

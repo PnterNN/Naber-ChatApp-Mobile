@@ -13,17 +13,20 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.example.nabermobileproject.NET.Server;
 import com.example.nabermobileproject.R;
 import com.example.nabermobileproject.services.DataService;
 import com.example.nabermobileproject.services.ServerManager;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class LoginActivity extends AppCompatActivity {
     Button loginButton;
     Button registerButton;
     EditText emailBox;
     EditText passwordBox;
+    Server server;
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -56,9 +59,22 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void loginCorrect(Void unused){
-        Log.d("NaberApp", "Login başarılı");
+
+        DataService.server = ServerManager.getInstance();
+        server = DataService.server;
+        DataService.users = new ArrayList<>();
+        DataService.tweets = new ArrayList<>();
+        DataService.friends = new ArrayList<>();
+        DataService.friendRequests = new ArrayList<>();
+        DataService.chatAdapter = new HashMap<>();
+
+        Intent chatIntent = new Intent(this, ChatActivity.class);
+        startActivity(chatIntent);
+
+        Intent userIntent = new Intent(this, UserlistActivity.class);
+        startActivity(userIntent);
+
         Intent tweetIntent = new Intent(this, TweetActivity.class);
-        tweetIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(tweetIntent);
 
     }

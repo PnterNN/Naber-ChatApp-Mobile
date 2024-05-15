@@ -14,7 +14,7 @@ import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
 public class Server {
-    private String host = "192.168.209.17";
+    private String host = "192.168.208.164";//45.141.149.133
     private int port = 9001;
     private Socket socket;
     private PacketReader packetReader;
@@ -171,7 +171,6 @@ public class Server {
             while (true) {
                 try {
                     byte opcode = packetReader.readByte();
-                    Log.d("NaberApp", "Opcode: " + opcode);
                     switch (opcode) {
                         case 0:
                             String registerStatus = packetReader.readMessage();

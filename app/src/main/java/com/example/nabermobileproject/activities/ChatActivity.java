@@ -1,41 +1,64 @@
 package com.example.nabermobileproject.activities;
 
-import androidx.annotation.RequiresApi;
+import android.annotation.SuppressLint;
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ListView;
+
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.os.Build;
-import android.os.Bundle;
-import android.util.Log;
-
+import com.example.nabermobileproject.NET.Server;
 import com.example.nabermobileproject.R;
+import com.example.nabermobileproject.adapters.ChatAdapter;
 import com.example.nabermobileproject.model.MessageModel;
-import com.example.nabermobileproject.model.TweetModel;
-import com.example.nabermobileproject.model.UserModel;
 import com.example.nabermobileproject.services.DataService;
+import com.example.nabermobileproject.services.ServerManager;
 
-import java.io.IOException;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Random;
-import java.util.UUID;
 
 public class ChatActivity extends AppCompatActivity {
+    ListView chatList;
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
-    @Override
-    protected void onRestart(){
-        super.onRestart();
-    }
-
+    EditText message;
+    Button send;
+    String UID;
+    @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle bundle){
         super.onCreate(bundle);
         setContentView(R.layout.activity_chat);
 
+        DataService.server = ServerManager.getInstance();
+
+        Intent intent = getIntent();
+        UID = intent.getStringExtra("UID");
+
+        if (DataService.chatAdapter == null) {
+            DataService.chatAdapter = new HashMap<>();
+        }
+
+        chatList = findViewById(R.id.chatList);
+        chatList.setAdapter(DataService.chatAdapter.get(UID));
+        message = findViewById(R.id.messageBox);
+        send = findViewById(R.id.sendButton);
+
+        send.setOnClickListener(this::sendMessage);
+    }
+
+    private void sendMessage(View view) {
+        Random random = new Random();
+        int messageUID = random.nextInt((999999999-100000000) + 1) + 100000000;
+        runOnUiThread(() -> {
+            MessageModel messageModel = new MessageModel(DataService.username, message.getText().toString(), UID, null);
+            ServerManager.sendMessage(message.getText().toString(), UID, "True", messageUID + "");
+            DataService.chatAdapter.get(UID).addMessage(messageModel);
+            message.setText("");
+        });
 
 
     }
-
 }

@@ -6,10 +6,9 @@ import java.util.List;
 public class UserModel {
     private String username;
     private String UID;
-    private List<UserModel> friends;
-    private List<MessageModel> messages;
-    private List<TweetModel> tweets;
-    private MessageModel lastMessage = messages.get(messages.size() - 1);
+    private ArrayList<UserModel> friends;
+    private ArrayList<MessageModel> messages;
+    private ArrayList<TweetModel> tweets;
     private Boolean ownRequest;
 
     public UserModel(String username, String userID) {
@@ -26,17 +25,14 @@ public class UserModel {
     public String getUID() {
         return UID;
     }
-    public List<UserModel> getFriends() {
+    public ArrayList<UserModel> getFriends() {
         return friends;
     }
-    public List<MessageModel> getMessages() {
+    public ArrayList<MessageModel> getMessages() {
         return messages;
     }
-    public List<TweetModel> getTweets() {
+    public ArrayList<TweetModel> getTweets() {
         return tweets;
-    }
-    public MessageModel getLastMessage() {
-        return lastMessage;
     }
     public void addFriend(UserModel friend) {
         friends.add(friend);
@@ -62,5 +58,4 @@ public class UserModel {
     public void setOwnRequest(Boolean ownRequest) {
         this.ownRequest = ownRequest;
     }
-
 }
