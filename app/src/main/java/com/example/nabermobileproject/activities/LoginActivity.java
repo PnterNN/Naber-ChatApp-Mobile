@@ -3,7 +3,10 @@ package com.example.nabermobileproject.activities;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -15,11 +18,13 @@ import android.widget.Toast;
 
 import com.example.nabermobileproject.NET.Server;
 import com.example.nabermobileproject.R;
+import com.example.nabermobileproject.adapters.UserAdapter;
 import com.example.nabermobileproject.services.DataService;
 import com.example.nabermobileproject.services.ServerManager;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+
 
 public class LoginActivity extends AppCompatActivity {
     Button loginButton;
@@ -28,11 +33,24 @@ public class LoginActivity extends AppCompatActivity {
     EditText passwordBox;
     Server server;
 
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = "Naber Channel";
+            String description = "Channel for Naber app notifications";
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            NotificationChannel channel = new NotificationChannel("naber_channel", name, importance);
+            channel.setDescription(description);
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
+    }
+
     @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+        createNotificationChannel();
         DataService.users = new ArrayList<>();
         DataService.tweets = new ArrayList<>();
         emailBox = findViewById(R.id.emailBox);
@@ -67,16 +85,11 @@ public class LoginActivity extends AppCompatActivity {
         DataService.friends = new ArrayList<>();
         DataService.friendRequests = new ArrayList<>();
         DataService.chatAdapter = new HashMap<>();
-
-        Intent chatIntent = new Intent(this, ChatActivity.class);
-        startActivity(chatIntent);
-
-        Intent userIntent = new Intent(this, UserlistActivity.class);
-        startActivity(userIntent);
+        DataService.userAdapter = new UserAdapter(this);
 
         Intent tweetIntent = new Intent(this, TweetActivity.class);
         startActivity(tweetIntent);
-
+        finish();
     }
     private void loginFailed(Void unused){
         runOnUiThread(() -> {

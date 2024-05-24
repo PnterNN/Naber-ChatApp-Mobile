@@ -14,7 +14,7 @@ import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
 public class Server {
-    private String host = "192.168.208.164";//45.141.149.133
+    private String host = "45.141.149.133";//45.141.149.133
     private int port = 9001;
     private Socket socket;
     private PacketReader packetReader;

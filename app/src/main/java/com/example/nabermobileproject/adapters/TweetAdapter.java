@@ -60,10 +60,8 @@ public class TweetAdapter extends BaseAdapter {
         View customView = layoutInflater.inflate(R.layout.tweetitem,null);
         TextView name = (TextView) customView.findViewById(R.id.tweetUsername);
         TextView genus = (TextView) customView.findViewById(R.id.tweetMessage);
-
         name.setText(DataService.tweets.get(position).getUsername());
         genus.setText(DataService.tweets.get(position).getTweetMessage());
-
         return customView;
     }
 }

@@ -13,6 +13,8 @@ import com.example.nabermobileproject.model.MessageModel;
 import com.example.nabermobileproject.model.UserModel;
 import com.example.nabermobileproject.services.DataService;
 
+import java.util.ArrayList;
+
 public class ChatAdapter extends BaseAdapter {
     private Context context;
     private LayoutInflater layoutInflater;
@@ -27,10 +29,24 @@ public class ChatAdapter extends BaseAdapter {
     }
 
     public void addMessage(MessageModel message) {
+        for (MessageModel messageModel : currentUser.getMessages()) {
+            if (messageModel.getUID().equals(message.getUID())) {
+                return;
+            }
+        }
         if (currentUser != null) {
             currentUser.getMessages().add(message);
             notifyDataSetChanged();
         }
+    }
+    public void clearMessages(){
+        if(currentUser != null){
+            currentUser.getMessages().clear();
+            notifyDataSetChanged();
+        }
+    }
+    public ArrayList<MessageModel> getMessages(){
+        return currentUser.getMessages();
     }
 
     public void removeMessage(MessageModel message) {
@@ -68,7 +84,6 @@ public class ChatAdapter extends BaseAdapter {
         TextView name = customView.findViewById(R.id.username);
         TextView message = customView.findViewById(R.id.message);
 
-        // Kullanıcı ve mesaj listesi kontrolü
         if (currentUser != null && currentUser.getMessages() != null) {
             if (position < currentUser.getMessages().size()) {
                 name.setText(currentUser.getUsername());

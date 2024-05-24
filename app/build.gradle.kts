@@ -30,6 +30,8 @@ android {
 
 dependencies {
 
+    //implementation("com.android.support:support-v4:28.0.0")
+    implementation("androidx.viewpager2:viewpager2:1.0.0")
     implementation("androidx.appcompat:appcompat:1.3.0-beta01")
     implementation("de.hdodenhof:circleimageview:3.1.0")
     implementation("androidx.cardview:cardview:1.0.0")

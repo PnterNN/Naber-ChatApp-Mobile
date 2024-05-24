@@ -74,14 +74,9 @@ public class RegisterActivity extends AppCompatActivity {
         DataService.friendRequests = new ArrayList<>();
         DataService.chatAdapter = new HashMap<>();
 
-        Intent chatIntent = new Intent(this, ChatActivity.class);
-        startActivity(chatIntent);
-
-        Intent userlistIntent = new Intent(this, UserlistActivity.class);
-        startActivity(userlistIntent);
-
         Intent tweetIntent = new Intent(this, TweetActivity.class);
         startActivity(tweetIntent);
+        finish();
     }
     private void registerFailEvent(Void unused){
         runOnUiThread(() -> {
